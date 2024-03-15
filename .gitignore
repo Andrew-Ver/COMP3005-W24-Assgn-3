@@ -1,0 +1,11 @@
+# Python
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+
+venv/
+bin/
+include/
+lib/
+tempCodeRunnerFile.py
