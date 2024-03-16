@@ -1,5 +1,7 @@
 import argparse
 from DatabaseAccess import DatabaseAccess
+from prettytable import from_db_cursor
+
 
 class MenuDrivenApp():
     def __init__(self):
@@ -71,6 +73,7 @@ class MenuDrivenApp():
 
     def initialize_table(self, args):
         self.db.initialize_table()
+        self.pretty_print()
 
 
     def deleteStudent(self, args):
@@ -96,11 +99,12 @@ class MenuDrivenApp():
             print(e)
 
     def getAllStudents(self, args):
-        result: list[str] = self.db.getAllStudents()
-        if not result:
-            print(f"Could not get students.")
-        else:
-            print(f"Students: {result}")
+        self.pretty_print()
+
+    def pretty_print(self):
+        cursor = self.db.cur.execute("SELECT * FROM students")
+        table = from_db_cursor(cursor)
+        print(table)
 
 
 if __name__ == "__main__":
