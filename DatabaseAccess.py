@@ -11,7 +11,7 @@ class DatabaseAccess:
         except Exception as e:
             print(f'Could not connect to database. {e}')
 
-    def initalize_table(self) -> False:
+    def initialize_table(self) -> None:
         # Drop the table if it exists
         # And recreate the schema then populate with initial students
         try:
@@ -32,8 +32,8 @@ class DatabaseAccess:
                     ('Jim', 'Beam', 'jim.beam@example.com', '2023-09-02');
                             """)
         except Exception as e:
-            print(f'Could not create table. {e}')
             self.conn.rollback()
+            raise Exception(f'Could not initialize table. {e}')
 
     def drop_table(self) -> None:
         self.cur.execute('''
@@ -51,9 +51,8 @@ class DatabaseAccess:
                     {'first_name': first_name, 'last_name': last_name, 'email': email, 'enrollment_date': enrollment_date})
             return True
         except Exception as e:
-            print(f'Could not add student. {e}')
             self.conn.rollback()
-            return False
+            raise Exception(f'Could not add student. {e}')
 
     def getAllStudents(self) -> list:
         try:
@@ -62,36 +61,36 @@ class DatabaseAccess:
                             """)
             return result.fetchall()
         except Exception as e:
-            print(f'Could not get students. {e}')
             self.conn.rollback()
-            return []
+            raise Exception(f'Could not get students. {e}')
 
-    def addStudent(self, first_name: str, last_name: str, email: str, enrollment_date: str) -> bool:
+    def addStudent(self, first_name: str, last_name: str, email: str, date: str) -> bool:
         try:
             self.cur.execute("""
                     INSERT INTO students (first_name, last_name, email, enrollment_date)
                              VALUES (%(first_name)s, %(last_name)s, %(email)s, %(enrollment_date)s);
                     """,
-                    {'first_name': first_name, 'last_name': last_name, 'email': email, 'enrollment_date': enrollment_date})
+                    {'first_name': first_name, 'last_name': last_name, 'email': email, 'enrollment_date': date})
             return True
         except Exception as e:
-            print(f'Could not add student. {e}')
             self.conn.rollback()
-            return False
+            raise Exception(f'Could not add student. {e}')
 
     def updateStudentEmail(self, student_id: int, new_email: str) -> bool:
         try:
-            self.cur.execute("""
+            result = self.cur.execute("""
                     UPDATE students
                     SET email = %(new_email)s
                     WHERE student_id = %(student_id)s;
                     """,
                     {'new_email': new_email, 'student_id': student_id})
+            if self.cur.rowcount == 0:
+                self.conn.rollback()
+                raise Exception('Student ID doesn\'t exist.')
             return True
         except Exception as e:
-            print(f'Could not update student id {id} email. {e}')
             self.conn.rollback()
-            return False
+            raise Exception(f'Could not update student id {student_id} email. {e}')
 
     def deleteStudent(self, student_id: int) -> bool:
         try:
@@ -100,11 +99,28 @@ class DatabaseAccess:
                             WHERE student_id = %(student_id)s;
                             """,
                             {'student_id': student_id})
+            # student_id does not exist in the table
+            if self.cur.rowcount == 0:
+                raise Exception()
             return True
         except Exception as e:
-            print(f'Could not delete student with ID: {student_id}. {e}')
             self.conn.rollback()
-            return False
+            raise Exception(f'Could not delete student with ID: {student_id}. {e}')
+
+    # Get a student by their ID
+    # Just for testing...
+    def getStudent(self, student_id: int) -> list:
+        try:
+            result: list[str] = self.cur.execute("""
+                            SELECT * FROM students
+                            WHERE student_id = %(student_id)s;
+                            """,
+                            {'student_id': student_id})
+            return result.fetchone()
+        except Exception as e:
+            print(f'Could not get student with ID: {student_id}. {e}')
+            self.conn.rollback()
+            return None
 
     def close_conn(self) -> None:
         # Close the cursor and database connection

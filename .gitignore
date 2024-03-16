@@ -3,9 +3,12 @@
 __pycache__/
 *.pyo
 *.pyd
+.pytest_cache/
 
 venv/
+.venv/
 bin/
 include/
 lib/
 tempCodeRunnerFile.py
+test_DatabaseAccess.py
