@@ -1,15 +1,16 @@
 import psycopg
 
+
 class DatabaseAccess:
     def __init__(self, conninfo: str, autocommit: bool=True) -> None:
-        # Connect to a local database with the specified credentials
-        # Autocommit enabled in order to not have to commit after any changes, saving code/errors
         try:
+            # Connect to a local database with the specified credentials
+            # Autocommit enabled in order to not have to commit after any changes, saving code/errors
             self.conn = psycopg.connect(conninfo=conninfo, autocommit=autocommit)
             # Connection's cursor object to perform SQL operations with
             self.cur = self.conn.cursor()
         except Exception as e:
-            print(f'Could not connect to database. {e}')
+            raise Exception(f'Could not connect to the database, please double-check conninfo. {e}')
 
     def initialize_table(self) -> None:
         # Drop the table if it exists
@@ -34,12 +35,6 @@ class DatabaseAccess:
         except Exception as e:
             self.conn.rollback()
             raise Exception(f'Could not initialize table. {e}')
-
-    def drop_table(self) -> None:
-        self.cur.execute('''
-                        DROP TABLE IF EXISTS students;
-                         ''')
-
 
     def addStudent(self, first_name: str, last_name: str, email: str, enrollment_date: str) -> bool:
         # Add student to the table
@@ -78,7 +73,7 @@ class DatabaseAccess:
 
     def updateStudentEmail(self, student_id: int, new_email: str) -> bool:
         try:
-            result = self.cur.execute("""
+            self.cur.execute("""
                     UPDATE students
                     SET email = %(new_email)s
                     WHERE student_id = %(student_id)s;
@@ -101,7 +96,7 @@ class DatabaseAccess:
                             {'student_id': student_id})
             # student_id does not exist in the table
             if self.cur.rowcount == 0:
-                raise Exception()
+                raise Exception('Student ID doesn\'t exist.')
             return True
         except Exception as e:
             self.conn.rollback()
