@@ -1,6 +1,6 @@
 import argparse
 from DatabaseAccess import DatabaseAccess
-from prettytable import from_db_cursor
+from prettytable import PrettyTable
 from yaml import safe_load
 
 
@@ -30,6 +30,10 @@ class Menu():
 
         getAllStudents_parser = subparsers.add_parser("getallstudents", help="Get all students")
 
+        # Set up the pretty table
+        self.table = PrettyTable()
+        self.table.field_names = ["ID", "First Name", "Last Name", "Email", "Enrollment Date"]
+
         # Connect to the local DB
         # Read the connection info from the config.yaml file
         try:
@@ -41,6 +45,12 @@ class Menu():
         except Exception as e:
             print(e)
             exit(1)
+
+    def __del__(self):
+        '''
+            Close the connection to the database when the program exits
+        '''
+        self.db.close_conn()
 
     def run(self):
         '''
@@ -141,14 +151,18 @@ class Menu():
             Get all students from the database,
             and pretty print the resulting db table
         '''
-        cursor = self.db.cur.execute("SELECT * FROM students")
-        table = from_db_cursor(cursor)
-        print(table)
+        try:
+            result: list = self.db.getAllStudents()
+            # Reset the table rows before adding and printing
+            self.table.clear_rows()
 
-    # def pretty_print(self, lst: list = None):
-    #     cursor = self.db.cur.execute("SELECT * FROM students")
-    #     table = from_db_cursor(cursor)
-    #
+            for row in result:
+                self.table.add_row(row)
+
+            print(self.table)
+
+        except Exception as e:
+            print(e)
 
 
 if __name__ == "__main__":

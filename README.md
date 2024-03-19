@@ -1,7 +1,8 @@
 # COMP3005 Assignment 3 Winter 2024
 
 ### Setup
-Make sure Python is installed and install the pip dependencies with ```pip install requirements.txt```, optionally creating a virtual environment.
+Make sure Python is installed and install the pip dependencies with ```pip install -r requirements.txt```, optionally creating a virtual environment.
+***On Windows sometimes need to do ```pip install psycopg[binary]```***
 
 **Ensure Postgresql server is running locally and a database to connect to is created.**
 

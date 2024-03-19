@@ -36,30 +36,22 @@ class DatabaseAccess:
             self.conn.rollback()
             raise Exception(f'Could not initialize table. {e}')
 
-    def addStudent(self, first_name: str, last_name: str, email: str, enrollment_date: str) -> bool:
-        # Add student to the table
+    def getAllStudents(self) -> list:
+        '''
+            Get all students from the table
+        '''
         try:
             self.cur.execute("""
-                    INSERT INTO students (first_name, last_name, email, enrollment_date)
-                            VALUES (%(first_name)s, %(last_name)s, %(email)s, %(enrollment_date)s;
-                    """,
-                    {'first_name': first_name, 'last_name': last_name, 'email': email, 'enrollment_date': enrollment_date})
-            return True
-        except Exception as e:
-            self.conn.rollback()
-            raise Exception(f'Could not add student. {e}')
-
-    def getAllStudents(self) -> list:
-        try:
-            result: list[str] = self.cur.execute("""
-                            SELECT * FROM students;
+                            SELECT * FROM students
+                            ORDER BY student_id ASC;
                             """)
-            return result.fetchall()
+            return self.cur.fetchall()
         except Exception as e:
             self.conn.rollback()
             raise Exception(f'Could not get students. {e}')
 
     def addStudent(self, first_name: str, last_name: str, email: str, date: str) -> bool:
+        # Add a student to the table
         try:
             self.cur.execute("""
                     INSERT INTO students (first_name, last_name, email, enrollment_date)
@@ -72,6 +64,7 @@ class DatabaseAccess:
             raise Exception(f'Could not add student. {e}')
 
     def updateStudentEmail(self, student_id: int, new_email: str) -> bool:
+        # Update student email by student_id
         try:
             self.cur.execute("""
                     UPDATE students
