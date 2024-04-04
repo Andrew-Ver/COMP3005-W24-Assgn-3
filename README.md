@@ -6,9 +6,6 @@ Make sure Python is installed and install the pip dependencies with ```pip insta
 
 **Ensure Postgresql server is running locally and a database to connect to is created.**
 
-## YouTube Demo Link
-**https://youtu.be/e6YbQGMp5RI**
-
 ### Project Structure
 ---
 * ```setup/setup.sql```
